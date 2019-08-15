@@ -6,7 +6,8 @@ import java.util.concurrent.ThreadLocalRandom
 import scala.concurrent.duration.FiniteDuration
 
 import akka.actor.ActorRef
-import com.typesafe.config.{Config, ConfigFactory}
+import com.softwaremill.sttp.akkahttp.AkkaHttpBackend
+import com.typesafe.config.Config
 import com.typesafe.scalalogging.StrictLogging
 import kamon.Kamon
 import monix.eval.Task
@@ -30,6 +31,10 @@ case class PromQlQueryParams(promQl: String, start: Long, step: Long, end: Long,
 
 object UnavailablePromQlQueryParams extends TsdbQueryParams
 
+trait QueryEngineConfig
+object UnavailableQueryEngineConfig extends QueryEngineConfig
+case class RemoteQueryConfig(backend: AkkaHttpBackend, config: Config) extends QueryEngineConfig
+
 /**
   * FiloDB Query Engine is the facade for execution of FiloDB queries.
   * It is meant for use inside FiloDB nodes to execute materialized
@@ -38,8 +43,8 @@ object UnavailablePromQlQueryParams extends TsdbQueryParams
 class QueryEngine(dataset: Dataset,
                   shardMapperFunc: => ShardMapper,
                   failureProvider: FailureProvider,
-                  spreadProvider: SpreadProvider = StaticSpreadProvider(),
-                  queryEngineConfig: Config = ConfigFactory.empty())
+                  queryEngineConfig: QueryEngineConfig,
+                  spreadProvider: SpreadProvider = StaticSpreadProvider())
                    extends StrictLogging {
 
   /**
@@ -82,15 +87,17 @@ class QueryEngine(dataset: Dataset,
         case route: RemoteRoute =>
           val timeRange = route.timeRange.get
           val queryParams = tsdbQueryParams.asInstanceOf[PromQlQueryParams]
-          val endpoint = queryEngineConfig.isEmpty() match {
-            case false => queryEngineConfig.getString("routing.buddy.http.endpoint")
+          val remoteQueryConfig = queryEngineConfig.asInstanceOf[RemoteQueryConfig]
+          val endpoint = remoteQueryConfig.config.isEmpty() match {
+            case false => remoteQueryConfig.config.getString("routing.buddy.http.endpoint")
             case _     => ""
           }
 
           val promQlInvocationParams = PromQlInvocationParams(endpoint, queryParams.promQl, (timeRange.startInMillis
             /1000), queryParams.step, (timeRange.endInMillis / 1000), queryParams.spread, false)
           logger.debug("PromQlExec params:" + promQlInvocationParams)
-          PromQlExec(queryId, InProcessPlanDispatcher(dataset), dataset.ref, promQlInvocationParams, submitTime)
+          PromQlExec(queryId, InProcessPlanDispatcher(dataset), dataset.ref, promQlInvocationParams, submitTime,
+            remoteQueryConfig.backend)
       }
     }
 

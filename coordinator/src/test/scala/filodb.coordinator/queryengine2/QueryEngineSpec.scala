@@ -36,7 +36,7 @@ class QueryEngineSpec extends FunSpec with Matchers {
                                           timeout: FiniteDuration): Task[query.QueryResponse] = ???
   }
 
-  val engine = new QueryEngine(dataset, mapperRef, EmptyFailureProvider)
+  val engine = new QueryEngine(dataset, mapperRef, EmptyFailureProvider, UnavailableQueryEngineConfig)
 
   /*
   This is the PromQL
@@ -142,7 +142,7 @@ class QueryEngineSpec extends FunSpec with Matchers {
     // Custom QueryEngine with different dataset with different metric name
     val dataset2 = dataset.copy(options = dataset.options.copy(
       metricColumn = "kpi", shardKeyColumns = Seq("kpi", "job")))
-    val engine2 = new QueryEngine(dataset2, mapperRef, EmptyFailureProvider)
+    val engine2 = new QueryEngine(dataset2, mapperRef, EmptyFailureProvider, UnavailableQueryEngineConfig)
 
     // materialized exec plan
     val execPlan = engine2.materialize(raw2, QueryOptions(), promQlQueryParams)
@@ -260,7 +260,7 @@ class QueryEngineSpec extends FunSpec with Matchers {
       }
     }
 
-    val engine = new QueryEngine(dataset, mapperRef, failureProvider)
+    val engine = new QueryEngine(dataset, mapperRef, failureProvider, UnavailableQueryEngineConfig)
     val execPlan = engine.materialize(summed, QueryOptions(), promQlQueryParams)
 
     execPlan.isInstanceOf[ReduceAggregateExec] shouldEqual (true)
@@ -295,7 +295,7 @@ class QueryEngineSpec extends FunSpec with Matchers {
       }
     }
 
-    val engine = new QueryEngine(dataset, mapperRef, failureProvider)
+    val engine = new QueryEngine(dataset, mapperRef, failureProvider, UnavailableQueryEngineConfig)
     val execPlan = engine.materialize(summed, QueryOptions(), promQlQueryParams)
 
     execPlan.isInstanceOf[PromQlExec] shouldEqual (true)
@@ -320,7 +320,7 @@ class QueryEngineSpec extends FunSpec with Matchers {
       }
     }
 
-    val engine = new QueryEngine(dataset, mapperRef, failureProvider)
+    val engine = new QueryEngine(dataset, mapperRef, failureProvider, UnavailableQueryEngineConfig)
     val execPlan = engine.materialize(summed, QueryOptions(), promQlQueryParams)
 
     execPlan.isInstanceOf[StitchRvsExec] shouldEqual (true)
@@ -367,7 +367,7 @@ class QueryEngineSpec extends FunSpec with Matchers {
       }
     }
 
-    val engine = new QueryEngine(dataset, mapperRef, failureProvider)
+    val engine = new QueryEngine(dataset, mapperRef, failureProvider, UnavailableQueryEngineConfig)
     val execPlan = engine.materialize(summed, QueryOptions(), promQlQueryParams)
 
     execPlan.isInstanceOf[PromQlExec] shouldEqual (true)
@@ -390,7 +390,7 @@ class QueryEngineSpec extends FunSpec with Matchers {
       }
     }
 
-    val engine = new QueryEngine(dataset, mapperRef, failureProvider)
+    val engine = new QueryEngine(dataset, mapperRef, failureProvider, UnavailableQueryEngineConfig)
     val execPlan = engine.materialize(summed, QueryOptions(), promQlQueryParams)
 
     execPlan.isInstanceOf[PromQlExec] shouldEqual (true)
@@ -413,7 +413,7 @@ class QueryEngineSpec extends FunSpec with Matchers {
       }
     }
 
-    val engine = new QueryEngine(dataset, mapperRef, failureProvider)
+    val engine = new QueryEngine(dataset, mapperRef, failureProvider, UnavailableQueryEngineConfig)
     val execPlan = engine.materialize(summed, QueryOptions(), promQlQueryParams)
 
     execPlan.isInstanceOf[PromQlExec] shouldEqual (true)
@@ -441,7 +441,7 @@ class QueryEngineSpec extends FunSpec with Matchers {
     }
     //900K to 1020K and 1020+60 k to 2000K
 
-    val engine = new QueryEngine(dataset, mapperRef, failureProvider)
+    val engine = new QueryEngine(dataset, mapperRef, failureProvider, UnavailableQueryEngineConfig)
     val execPlan = engine.materialize(summed, QueryOptions(), promQlQueryParams)
 
     execPlan.isInstanceOf[StitchRvsExec] shouldEqual (true)
@@ -493,7 +493,7 @@ class QueryEngineSpec extends FunSpec with Matchers {
       }
     }
 
-    val engine = new QueryEngine(dataset, mapperRef, failureProvider)
+    val engine = new QueryEngine(dataset, mapperRef, failureProvider, UnavailableQueryEngineConfig)
     val execPlan = engine.materialize(summed, QueryOptions(), promQlQueryParams)
 
     execPlan.isInstanceOf[PromQlExec] shouldEqual (true)
@@ -525,7 +525,7 @@ class QueryEngineSpec extends FunSpec with Matchers {
       }
     }
 
-    val engine = new QueryEngine(dataset, mapperRef, failureProvider)
+    val engine = new QueryEngine(dataset, mapperRef, failureProvider, UnavailableQueryEngineConfig)
     val execPlan = engine.materialize(summed, QueryOptions(), promQlQueryParams)
 
     execPlan.isInstanceOf[ReduceAggregateExec] shouldEqual (true)
@@ -563,7 +563,7 @@ class QueryEngineSpec extends FunSpec with Matchers {
       }
     }
 
-    val engine = new QueryEngine(dataset, mapperRef, failureProvider)
+    val engine = new QueryEngine(dataset, mapperRef, failureProvider, UnavailableQueryEngineConfig)
     val execPlan = engine.materialize(summed, QueryOptions(), promQlQueryParams)
 
     execPlan.isInstanceOf[PromQlExec] shouldEqual (true)

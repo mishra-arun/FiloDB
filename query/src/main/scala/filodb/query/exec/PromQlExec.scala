@@ -8,7 +8,6 @@ import monix.execution.Scheduler
 import monix.reactive.Observable
 import scala.concurrent.Future
 import scala.concurrent.duration.FiniteDuration
-import scala.sys.ShutdownHookThread
 
 import filodb.core.DatasetRef
 import filodb.core.metadata.Column.ColumnType
@@ -22,11 +21,14 @@ import filodb.query._
 case class PromQlExec(id: String,
                       dispatcher: PlanDispatcher,
                       dataset: DatasetRef, params: PromQlInvocationParams,
-                      submitTime: Long = System.currentTimeMillis())
+                      submitTime: Long = System.currentTimeMillis(),
+                      backend: AkkaHttpBackend)
                       extends LeafExecPlan {
 
   protected def args: String = params.toString
   import PromQlExec._
+
+  implicit val akkaHttpBackend = backend
 
   val builder = SerializableRangeVector.toBuilder(recSchema)
 
@@ -108,11 +110,11 @@ object PromQlExec extends  StrictLogging{
   // DO NOT REMOVE PromCirceSupport import below assuming it is unused - Intellij removes it in auto-imports :( .
   // Needed to override Sampl case class Encoder.
   import PromCirceSupport._
-  implicit val backend = AkkaHttpBackend()
+//  implicit val backend = AkkaHttpBackend()
 
-  ShutdownHookThread(shutdown())
+//  ShutdownHookThread(shutdown())
 
-  def httpGet(params: PromQlInvocationParams)(implicit scheduler: Scheduler):
+  def httpGet(params: PromQlInvocationParams)(implicit scheduler: Scheduler, backend: AkkaHttpBackend):
   Future[Response[scala.Either[DeserializationError[io.circe.Error], SuccessResponse]]] = {
     var urlParams = Map("query" -> params.promQl, "start" -> params.start, "end" -> params.end, "step" -> params.step,
       "processFailure" -> params.processFailure)
@@ -125,10 +127,10 @@ object PromQlExec extends  StrictLogging{
     sttp.get(url).response(asJson[SuccessResponse]).send()
   }
 
-  def shutdown(): Unit =
-  {
-    logger.info("Shutting PromQlExec http")
-    backend.close()
-  }
+//  def shutdown(): Unit =
+//  {
+//    logger.info("Shutting PromQlExec http")
+//    backend.close()
+//  }
 }
 

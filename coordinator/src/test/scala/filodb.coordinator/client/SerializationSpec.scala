@@ -6,7 +6,7 @@ import akka.testkit.TestProbe
 import org.scalatest.concurrent.ScalaFutures
 
 import filodb.coordinator.{ActorSpecConfig, ActorTest, ShardMapper}
-import filodb.coordinator.queryengine2.{EmptyFailureProvider, QueryEngine, UnavailablePromQlQueryParams}
+import filodb.coordinator.queryengine2.{EmptyFailureProvider, QueryEngine, UnavailablePromQlQueryParams, UnavailableQueryEngineConfig}
 import filodb.core.{query, MachineMetricsData, MetricsTestData, NamesTestData, SpreadChange}
 import filodb.core.binaryrecord2.BinaryRecordRowReader
 import filodb.core.metadata.Column.ColumnType
@@ -171,7 +171,7 @@ class SerializationSpec extends ActorTest(SerializationSpecConfig.getNewSystem) 
     mapper.registerNode(Seq(0), node0)
     def mapperRef: ShardMapper = mapper
     val dataset = MetricsTestData.timeseriesDataset
-    val engine = new QueryEngine(dataset, mapperRef, EmptyFailureProvider)
+    val engine = new QueryEngine(dataset, mapperRef, EmptyFailureProvider, UnavailableQueryEngineConfig)
     val f1 = Seq(ColumnFilter("__name__", Filter.Equals("http_request_duration_seconds_bucket")),
       ColumnFilter("job", Filter.Equals("myService")),
       ColumnFilter("le", Filter.Equals("0.3")))
@@ -205,7 +205,7 @@ class SerializationSpec extends ActorTest(SerializationSpecConfig.getNewSystem) 
     val from = to - 50
     val qParams = TimeStepParams(from, 10, to)
     val dataset = MetricsTestData.timeseriesDataset
-    val engine = new QueryEngine(dataset, mapperRef, EmptyFailureProvider)
+    val engine = new QueryEngine(dataset, mapperRef, EmptyFailureProvider, UnavailableQueryEngineConfig)
 
     val logicalPlan1 = Parser.queryRangeToLogicalPlan(
       "sum(rate(http_request_duration_seconds_bucket{job=\"prometheus\"}[20s])) by (handler)",
@@ -236,7 +236,7 @@ class SerializationSpec extends ActorTest(SerializationSpecConfig.getNewSystem) 
     val from = to - 50
     val qParams = TimeStepParams(from, 10, to)
     val dataset = MetricsTestData.timeseriesDataset
-    val engine = new QueryEngine(dataset, mapperRef, EmptyFailureProvider)
+    val engine = new QueryEngine(dataset, mapperRef, EmptyFailureProvider, UnavailableQueryEngineConfig)
 
     // with column filters having shardcolumns
     val logicalPlan1 = Parser.metadataQueryToLogicalPlan(

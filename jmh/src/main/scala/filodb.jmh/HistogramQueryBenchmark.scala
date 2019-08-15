@@ -14,7 +14,7 @@ import org.openjdk.jmh.annotations._
 
 import filodb.coordinator.{FilodbCluster, IngestionStarted, ShardMapper}
 import filodb.coordinator.client.QueryCommands._
-import filodb.coordinator.queryengine2.{EmptyFailureProvider, QueryEngine, UnavailablePromQlQueryParams}
+import filodb.coordinator.queryengine2.{EmptyFailureProvider, QueryEngine, UnavailablePromQlQueryParams, UnavailableQueryEngineConfig}
 import filodb.core.{MachineMetricsData, MetricsTestData, SpreadChange, TestData}
 import filodb.core.binaryrecord2.RecordBuilder
 import filodb.core.memstore._
@@ -76,8 +76,8 @@ class HistogramQueryBenchmark {
   shardMapper.updateFromEvent(IngestionStarted(histDataset.ref, 0, coordinator))
 
   // Query configuration
-  val hEngine = new QueryEngine(histDataset, shardMapper, EmptyFailureProvider)
-  val pEngine = new QueryEngine(promDataset, shardMapper, EmptyFailureProvider)
+  val hEngine = new QueryEngine(histDataset, shardMapper, EmptyFailureProvider, UnavailableQueryEngineConfig)
+  val pEngine = new QueryEngine(promDataset, shardMapper, EmptyFailureProvider, UnavailableQueryEngineConfig)
   val startTime = 100000L + 100*1000  // 100 samples in.  Look back 30 samples, which normally would be 5min
 
   val histQuery = """histogram_quantile(0.9, sum_over_time(http_requests_total{job="prometheus",__col__="h"}[30s]))"""

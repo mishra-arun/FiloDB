@@ -14,14 +14,14 @@ import monix.execution.Scheduler
 import monix.reactive.Observable
 import org.openjdk.jmh.annotations._
 
-import filodb.coordinator.queryengine2.{EmptyFailureProvider, UnavailablePromQlQueryParams}
+import filodb.coordinator.queryengine2.{EmptyFailureProvider, UnavailablePromQlQueryParams, UnavailableQueryEngineConfig}
 import filodb.core.SpreadChange
 import filodb.core.binaryrecord2.RecordContainer
 import filodb.core.memstore.{SomeData, TimeSeriesMemStore}
 import filodb.core.store.StoreConfig
 import filodb.prometheus.ast.TimeStepParams
 import filodb.prometheus.parse.Parser
-import filodb.query.{QueryConfig, QueryError => QError, QueryOptions, QueryResult => QueryResult2}
+import filodb.query.{QueryConfig, QueryOptions, QueryError => QError, QueryResult => QueryResult2}
 import filodb.timeseries.TestTimeseriesProducer
 
 //scalastyle:off regex
@@ -104,7 +104,7 @@ class QueryInMemoryBenchmark extends StrictLogging {
   // Stuff for directly executing queries ourselves
   import filodb.coordinator.queryengine2.QueryEngine
 
-  val engine = new QueryEngine(dataset, shardMapper, EmptyFailureProvider)
+  val engine = new QueryEngine(dataset, shardMapper, EmptyFailureProvider, UnavailableQueryEngineConfig)
 
   /**
    * ## ========  Queries ===========
